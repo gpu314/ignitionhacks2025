@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { MapView, Marker } from "./Map";
+
 
 type LandmarkItem = {
     name: string;

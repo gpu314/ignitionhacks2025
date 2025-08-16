@@ -53,7 +53,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="SafetyCamera"
         options={{
-          title: "SafetyCamera",
+          title: "Safety Camera",
+          tabBarIcon: () => <Text style={{ fontSize: 24 }}>🐽</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="landmarks"
+        options={{
+          title: "Land Marks",
           tabBarIcon: () => <Text style={{ fontSize: 24 }}>🐽</Text>,
         }}
       />

@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import Groq from 'groq-sdk';
+import { MapView, Marker } from "./Map";
+
+const groq = new Groq({
+    apiKey: "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",
+    dangerouslyAllowBrowser: true,
+});
+
 
 type FoodItem = {
     name: string;
@@ -9,6 +16,7 @@ type FoodItem = {
     lat: number;
     lon: number;
     map_link: string;
+    description: string;
 }
 
 export default function FoodScreen() {
@@ -20,6 +28,23 @@ export default function FoodScreen() {
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
     });
+    const runAI = async (placeName: string): Promise<string> => {
+        try {
+            const chatCompletion = await groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "user",
+                        content: `Write a short description (1-3 sentences) about the food place: ${placeName}`,
+                    },
+                ],
+                model: "llama3-8b-8192",
+            });
+            return chatCompletion.choices[0].message.content || "🐷 Oink! Couldn't fetch description.";
+        } catch (err) {
+            console.error(err);
+            return "🐷 Oink! Error fetching description.";
+        }
+    };
 
     const fetchFoodRecs = async () => {
         setLoading(true);
@@ -37,8 +62,8 @@ export default function FoodScreen() {
 
         try {
             const resp = await fetch("https://overpass-api.de/api/interpreter", {
-                method: "POST", 
-                headers: {"Content-Type": "text/plain"},
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
                 body: query,
             });
 
@@ -62,7 +87,8 @@ export default function FoodScreen() {
                 const lat = x.lat;
                 const lon = x.lon;
                 const map_link = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-                return {name, cuisine, website, lat, lon, map_link};
+                const description = runAI(name);
+                return { name, cuisine, website, lat, lon, map_link, description };
             });
 
             setFoods(recs);
@@ -105,11 +131,7 @@ export default function FoodScreen() {
                                 <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
                                 <Text>Cuisine: {item.cuisine}</Text>
                                 <Text>Website: {item.website}</Text>
-                                <Text
-                                    style={{ color: "blue" }}
-                                    onPress={() => Linking.openURL(item.map_link)}
-                                >
-                                    View on Google Maps
+                                <Text> Description: {item.description}
                                 </Text>
                             </View>
                         )}
