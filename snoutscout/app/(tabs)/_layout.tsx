@@ -61,7 +61,7 @@ export default function TabLayout() {
         name="landmarks"
         options={{
           title: "Land Marks",
-          tabBarIcon: () => <Text style={{ fontSize: 24 }}>🐽</Text>,
+          tabBarIcon: () => <Text style={{ fontSize: 24 }}>⛰</Text>,
         }}
       />
 

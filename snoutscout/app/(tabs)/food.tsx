@@ -1,50 +1,61 @@
-import React, { useState } from "react";
-import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
-import Groq from 'groq-sdk';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  SafeAreaView,
+  ActivityIndicator,
+  Linking,
+  StyleSheet,
+  Dimensions,
+  Button,
+} from "react-native";
+import Groq from "groq-sdk";
 import { MapView, Marker } from "./Map";
+import { theme } from './theme'
 
 const groq = new Groq({
-    apiKey: "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",
-    dangerouslyAllowBrowser: true,
+  apiKey: "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",
+  dangerouslyAllowBrowser: true,
 });
 
-
 type FoodItem = {
-    name: string;
-    cuisine: string;
-    website: string;
-    lat: number;
-    lon: number;
-    map_link: string;
-    description: string;
-}
+  name: string;
+  cuisine: string;
+  website: string;
+  lat: number;
+  lon: number;
+  map_link: string;
+  description: string;
+};
 
 export default function FoodScreen() {
-    const [loading, setLoading] = useState(false);
-    const [foods, setFoods] = useState<FoodItem[]>([]);
-    const [region, setRegion] = useState({
-        latitude: 43.655863594186755,
-        longitude: -79.38249460259485,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-    });
-    const runAI = async (placeName: string): Promise<string> => {
-        try {
-            const chatCompletion = await groq.chat.completions.create({
-                messages: [
-                    {
-                        role: "user",
-                        content: `Write a short description (1-3 sentences) about the food place: ${placeName}`,
-                    },
-                ],
-                model: "llama3-8b-8192",
-            });
-            return chatCompletion.choices[0].message.content || "🐷 Oink! Couldn't fetch description.";
-        } catch (err) {
-            console.error(err);
-            return "🐷 Oink! Error fetching description.";
-        }
-    };
+  const [loading, setLoading] = useState(false);
+  const [foods, setFoods] = useState<FoodItem[]>([]);
+  const [region, setRegion] = useState({
+    latitude: 43.655864,
+    longitude: -79.382495,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  });
+
+  const runAI = async (placeName: string): Promise<string> => {
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content: `Write a short description (1-3 sentences) about the food place: ${placeName}`,
+          },
+        ],
+        model: "llama3-8b-8192",
+      });
+      return chatCompletion.choices[0].message.content || "🐷 Oink! Couldn't fetch description.";
+    } catch (err) {
+      console.error(err);
+      return "🐷 Oink! Error fetching description.";
+    }
+  };
 
     const fetchFoodRecs = async () => {
         setLoading(true);
@@ -99,10 +110,13 @@ export default function FoodScreen() {
         }
     };
 
+      useEffect(() => {
+    fetchFoodRecs();
+  }, []);
+
+
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <Button title="Generate Food Recommendations" onPress={fetchFoodRecs} />
-
             {loading && <ActivityIndicator size="large" style={{ marginTop: 16 }} />}
 
             {!loading && foods.length > 0 && (
@@ -122,31 +136,63 @@ export default function FoodScreen() {
                         ))}
                     </MapView>
 
-                    <FlatList
-                        style={{ flex: 1, padding: 16 }}
-                        data={foods}
-                        keyExtractor={(item, index) => item.name + index}
-                        renderItem={({ item }) => (
-                            <View style={styles.listItem}>
-                                <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
-                                <Text>Cuisine: {item.cuisine}</Text>
-                                <Text>Website: {item.website}</Text>
-                                <Text> Description: {item.description}
-                                </Text>
-                            </View>
-                        )}
-                    />
-                </View>
+          <FlatList
+            style={styles.list}
+            data={foods}
+            keyExtractor={(item, index) => item.name + index}
+            renderItem={({ item }) => (
+              <View style={styles.listItem}>
+                <Text style={styles.itemTitle}>🐷 {item.name}</Text>
+                <Text style={styles.itemText}>Cuisine: {item.cuisine}</Text>
+                <Text style={styles.itemText}>Website: {item.website}</Text>
+                <Text style={styles.itemText}>Description: {item.description}</Text>
+              </View>
             )}
-        </SafeAreaView>
-    );
+          />
+        </View>
+      )}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    listItem: {
-        marginBottom: 12,
-        padding: 12,
-        borderRadius: 8,
-        backgroundColor: "#f0f0f0",
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#ffe6f0", 
+  },
+  loader: {
+    marginTop: 16,
+  },
+  content: {
+    flex: 1,
+  },
+  map: {
+    width: Dimensions.get("window").width,
+    height: 400,
+  },
+  list: {
+    flex: 1,
+    padding: 16,
+  },
+  listItem: {
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: theme.white,
+    shadowColor: "#ff69b4",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  itemTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 4,
+    color: "#800040",
+  },
+  itemText: {
+    fontSize: 14,
+    marginBottom: 2,
+    color: "#4d004d",
+  },
 });
