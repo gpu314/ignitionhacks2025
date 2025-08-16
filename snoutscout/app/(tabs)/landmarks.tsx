@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
+import { View, Text, FlatList, SafeAreaView, ActivityIndicator, StyleSheet, Dimensions } from "react-native";
 import { MapView, Marker } from "./Map";
 import { theme } from "./theme"
 import Groq from "groq-sdk";
