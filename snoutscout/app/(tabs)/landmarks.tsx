@@ -82,7 +82,7 @@ export default function LandmarksScreen() {
             }
 
             const recs: LandmarkItem[] = await Promise.all(
-                elements.slice(0, 10).map(async (x: any) => {
+                elements.slice(0, 8).map(async (x: any) => {
                     const name = x.tags?.name ?? "Unnamed";
                     const lat = x.lat;
                     const lon = x.lon;

@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, Button, View, Text } from 'react-native';
 import Groq from 'groq-sdk';
 import Markdown from 'react-native-markdown-display';
-
+import { theme } from './theme'
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
+
+import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import TabBarBackground from '@/components/ui/TabBarBackground';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Image } from 'expo-image';
 
 const groq = new Groq({
     apiKey: "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",
@@ -33,15 +41,13 @@ export default function TranslateScreen() {
 
     return (
         <ParallaxScrollView
-            headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+            headerBackgroundColor={{ light: theme.pinkLight, dark: theme.pinkDark }}
             headerImage={
-                <IconSymbol
-                    size={310}
-                    color="#808080"
-                    name="chevron.left.forwardslash.chevron.right"
+                <Image
+                    source={require('@/assets/images/pig.png')}
+                    style={styles.reactLogo}
                 />
-            }
-        >
+            }>
             <ThemedView >
                 <ThemedText type="title">Translate</ThemedText>
             </ThemedView>
@@ -69,3 +75,22 @@ export default function TranslateScreen() {
         </ParallaxScrollView>
     );
 }
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});
