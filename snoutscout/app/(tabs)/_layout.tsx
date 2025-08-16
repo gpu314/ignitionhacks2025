@@ -64,6 +64,13 @@ export default function TabLayout() {
           tabBarIcon: () => <Text style={{ fontSize: 24 }}>⛰</Text>,
         }}
       />
+      <Tabs.Screen
+        name="translate"
+        options={{
+          title: "Translation",
+          tabBarIcon: () => <Text style={{ fontSize: 24 }}>📚</Text>,
+        }}
+      />
 
     </Tabs>
   );
