@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    FlatList,
-    SafeAreaView,
-    ActivityIndicator,
-    Linking,
-    StyleSheet,
-    Dimensions,
-    Button,
-} from "react-native";
-import Groq from "groq-sdk";
+import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
 import { MapView, Marker } from "./Map";
 import { theme } from './theme'
+import Groq from "groq-sdk";
 
 const groq = new Groq({
-    apiKey: "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",
+    apiKey: "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",
     dangerouslyAllowBrowser: true,
 });
 

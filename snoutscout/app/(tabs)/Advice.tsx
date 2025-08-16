@@ -7,7 +7,7 @@ import { theme } from './theme';
 import Groq from 'groq-sdk';
 
 const groq = new Groq({
-  apiKey: "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",
+  apiKey: "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",
   dangerouslyAllowBrowser: true,
 });
 

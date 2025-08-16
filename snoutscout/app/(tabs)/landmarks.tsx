@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Button, FlatList, SafeAreaView, ActivityIndicator, Linking, StyleSheet, Dimensions } from "react-native";
 import { MapView, Marker } from "./Map";
+import { theme } from "./theme"
+import Groq from "groq-sdk";
 
+const groq = new Groq({
+    apiKey: "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",
+    dangerouslyAllowBrowser: true,
+});
 
 type LandmarkItem = {
     name: string;
     lat: number;
     lon: number;
+    description: string
 }
 
 export default function LandmarksScreen() {
@@ -18,6 +25,23 @@ export default function LandmarksScreen() {
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
     });
+    const runAI = async (placeName: string): Promise<string> => {
+        try {
+            const chatCompletion = await groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "user",
+                        content: `Write a short description (1 sentence) about the Toronto landmark: ${placeName}`,
+                    },
+                ],
+                model: "llama3-8b-8192",
+            });
+            return chatCompletion.choices[0].message.content || "🐷 Oink! Couldn't fetch description.";
+        } catch (err) {
+            console.error(err);
+            return "🐷 Oink! Error fetching description.";
+        }
+    };
 
     const fetchLandmarkRecs = async () => {
         setLoading(true);
@@ -39,8 +63,8 @@ export default function LandmarksScreen() {
 
         try {
             const resp = await fetch("https://overpass-api.de/api/interpreter", {
-                method: "POST", 
-                headers: {"Content-Type": "text/plain"},
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
                 body: query,
             });
 
@@ -57,13 +81,17 @@ export default function LandmarksScreen() {
                 return;
             }
 
-            const recs: LandmarkItem[] = elements.slice(0, 10).map((x: any) => {
-                const name = x.tags?.name ?? "Unnamed";
-                const lat = x.lat;
-                const lon = x.lon;
-                return {name, lat, lon};
-            });
+            const recs: LandmarkItem[] = await Promise.all(
+                elements.slice(0, 10).map(async (x: any) => {
+                    const name = x.tags?.name ?? "Unnamed";
+                    const lat = x.lat;
+                    const lon = x.lon;
+                    const description = await runAI(name);
+                    return { name, lat, lon, description };
+                })
+            );
 
+            setLandmarks(recs);
             setLandmarks(recs);
         } catch (e) {
             console.log(e);
@@ -72,9 +100,13 @@ export default function LandmarksScreen() {
         }
     };
 
+    useEffect(() => {
+        fetchLandmarkRecs();
+    }, []);
+
+
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <Button title="Generate Landmark Recommendations" onPress={fetchLandmarkRecs} />
 
             {loading && <ActivityIndicator size="large" style={{ marginTop: 16 }} />}
 
@@ -94,12 +126,13 @@ export default function LandmarksScreen() {
                     </MapView>
 
                     <FlatList
-                        style={{ flex: 1, padding: 16 }}
+                        style={styles.list}
                         data={landmarks}
                         keyExtractor={(item, index) => item.name + index}
                         renderItem={({ item }) => (
                             <View style={styles.listItem}>
                                 <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
+                                <Text style={{ fontSize: 14 }}>{item.description}</Text>
                             </View>
                         )}
                     />
@@ -110,10 +143,43 @@ export default function LandmarksScreen() {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#ffe6f0",
+    },
+    loader: {
+        marginTop: 16,
+    },
+    content: {
+        flex: 1,
+    },
+    map: {
+        width: Dimensions.get("window").width,
+        height: 400,
+    },
+    list: {
+        flex: 1,
+        padding: 16,
+    },
     listItem: {
         marginBottom: 12,
-        padding: 12,
-        borderRadius: 8,
-        backgroundColor: "#f0f0f0",
+        padding: 14,
+        borderRadius: 12,
+        backgroundColor: theme.white,
+        shadowColor: "#ff69b4",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+    },
+    itemTitle: {
+        fontWeight: "bold",
+        fontSize: 16,
+        marginBottom: 4,
+        color: "#800040",
+    },
+    itemText: {
+        fontSize: 14,
+        marginBottom: 2,
+        color: "#4d004d",
     },
 });
